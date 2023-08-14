@@ -5,6 +5,7 @@ pub fn human(outputs: &[Output]) -> String {
         .iter()
         .filter(|output| output.file_name().is_some())
         .filter_map(crate::Output::rendered)
+        .cloned()
         .collect()
 }
 
@@ -70,7 +71,8 @@ pub fn github_pr_annotation(outputs: &[Output]) -> String {
                 output.level().unwrap_or_else(|| "notice".to_owned()),
                 output
                     .rendered()
-                    .unwrap_or_else(|| "No message".to_owned())
+                    .and_then(|rendered| Some(rendered.as_str()))
+                    .unwrap_or_else(|| "No message")
                     .replace('\n', "%0A"),
             )
         })
