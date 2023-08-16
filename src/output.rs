@@ -46,11 +46,11 @@ impl Output {
         self.success.unwrap_or_default()
     }
 
-    pub fn level(&self) -> Option<String> {
+    pub fn level(&self) -> Option<&str> {
         self.message
             .as_ref()
             .and_then(|message| message.level.as_ref())
-            .cloned()
+            .map(std::string::String::as_str)
     }
 
     pub fn line_start(&self) -> Option<usize> {
@@ -81,21 +81,25 @@ impl Output {
             .and_then(|span| span.column_end)
     }
 
-    pub fn file_name(&self) -> Option<&String> {
+    pub fn file_name(&self) -> Option<&str> {
         self.message
             .as_ref()
             .and_then(|message| message.spans.first())
             .and_then(|span| span.file_name.as_ref())
+            .map(std::string::String::as_str)
     }
 
     pub fn is_level(&self, level: &Level) -> bool {
-        Level::from_str(self.level().unwrap_or_default().as_str()).map_or(false, |l| l == *level)
+        Level::from_str(self.level().unwrap_or_default())
+            .map(|l| l == *level)
+            .unwrap_or_default()
     }
 
-    pub fn rendered(&self) -> Option<&String> {
+    pub fn rendered(&self) -> Option<&str> {
         self.message
             .as_ref()
             .and_then(|message| message.rendered.as_ref())
+            .map(std::string::String::as_str)
     }
 
     pub fn message(&self) -> Option<String> {

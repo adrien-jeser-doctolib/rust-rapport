@@ -5,7 +5,6 @@ pub fn human(outputs: &[Output]) -> String {
         .iter()
         .filter(|output| output.file_name().is_some())
         .filter_map(crate::Output::rendered)
-        .cloned()
         .collect()
 }
 
@@ -22,7 +21,7 @@ pub fn github_summary(outputs: &[Output]) -> String {
             .map(|output| {
                 format!(
                     "| {} | {} |",
-                    output.level().unwrap_or_else(|| "Unknow".to_owned()),
+                    output.level().unwrap_or("Unknow"),
                     output
                         .message()
                         .unwrap_or_else(|| "No message".to_owned())
@@ -68,11 +67,10 @@ pub fn github_pr_annotation(outputs: &[Output]) -> String {
 
             format!(
                 "::{} {opts}::{}",
-                output.level().unwrap_or_else(|| "notice".to_owned()),
+                output.level().unwrap_or("notice"),
                 output
                     .rendered()
-                    .and_then(|rendered| Some(rendered.as_str()))
-                    .unwrap_or_else(|| "No message")
+                    .unwrap_or("No message")
                     .replace('\n', "%0A"),
             )
         })
