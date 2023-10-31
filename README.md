@@ -19,6 +19,7 @@ name: Lints
 jobs:
   default:
     name: Clippy
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - run: rustup component add clippy
