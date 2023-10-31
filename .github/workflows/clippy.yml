@@ -17,6 +17,6 @@ jobs:
       - name: Clippy
         run: |-
           set +e
-          cargo clippy --color always --message-format json \
+          cargo clippy --color always --message-format json -- -W clippy::pedantic -W clippy::restriction -W clippy::nursery \
             | tee >(rust-rapport github-summary >> "${GITHUB_STEP_SUMMARY}") >(rust-rapport github-pr-annotation) > /dev/null
            exit "${PIPESTATUS[0]}"
