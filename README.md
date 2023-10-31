@@ -1,5 +1,7 @@
 # Rust rapport
 
+Example : https://github.com/adrien-jeser-doctolib/rust-rapport/pull/7/files
+
 ## Getting started
 
 ### Github action
