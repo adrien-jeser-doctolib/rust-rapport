@@ -1,5 +1,7 @@
 # Rust rapport
 
+Example : https://github.com/adrien-jeser-doctolib/rust-rapport/pull/7/commits/89b1cbe9c0f826478e587ddc06db9a88543af879
+
 ## Getting started
 
 ### Github action
