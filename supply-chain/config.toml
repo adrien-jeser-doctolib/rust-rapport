@@ -17,7 +17,7 @@ url = "https://raw.githubusercontent.com/divviup/libprio-rs/main/supply-chain/au
 url = "https://raw.githubusercontent.com/mozilla/supply-chain/main/audits.toml"
 
 [policy.rust-rapport]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [[exemptions.aho-corasick]]
 version = "1.1.4"
@@ -94,10 +94,6 @@ criteria = "safe-to-deploy"
 [[exemptions.regex-syntax]]
 version = "0.8.10"
 criteria = "safe-to-run"
-
-[[exemptions.rust-rapport]]
-version = "0.1.1"
-criteria = "safe-to-deploy"
 
 [[exemptions.ryu]]
 version = "1.0.15"
