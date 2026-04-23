@@ -86,6 +86,10 @@ Releases are fully automated by [release-plz](https://release-plz.ieni.dev/). Yo
 4. Merge the PR. release-plz then pushes the tag `vX.Y.Z`, creates the GitHub Release, and publishes to crates.io.
 5. The `Upload release binaries` workflow reacts to the GitHub Release being published and attaches the four cross-platform archives as release assets.
 
+## See it live
+
+A permanently-open draft PR renders the tool's output on intentionally clippy-hostile code — step summary, inline PR annotations, the works. It re-runs automatically against each newly published release: [Demo PR](https://github.com/adrien-jeser-doctolib/rust-rapport/pulls?q=is%3Apr+is%3Adraft+head%3Ademo%2Fshowcase).
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE) and [`CHANGELOG.md`](CHANGELOG.md).

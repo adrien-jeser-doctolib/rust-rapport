@@ -10,6 +10,12 @@ readme = "README.md"
 keywords = ["clippy", "cargo", "github-actions", "ci", "lint"]
 categories = ["command-line-utilities", "development-tools"]
 
+# The `demo/` crate (only present on the `demo/showcase` branch) is a showcase
+# of clippy-hostile code used by .github/workflows/demo.yml. Exclude it so
+# clippy/test/vet/publish on main never see it.
+[workspace]
+exclude = ["demo"]
+
 [lib]
 path = "src/lib.rs"
 
