@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.1.6](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.5...v0.1.6) - 2026-04-23
+
+### Other
+
+- add workspace exclude and refresh-demo job for demo PR
+
 ## [0.1.5](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.4...v0.1.5) - 2026-04-23
 
 ### Fixed

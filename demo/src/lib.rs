@@ -2,8 +2,14 @@
 //! one lint when compiled with `cargo clippy --message-format json`. The
 //! output is piped through rust-rapport on the demo PR to showcase how the
 //! tool renders warnings in GitHub step summaries and inline annotations.
+//!
+//! [`other`] — unchanged by the demo PR — demonstrates the complementary case:
+//! findings that sit *outside* the PR's diff appear only in the step summary,
+//! not as inline annotations.
 
 #![allow(dead_code)]
+
+pub mod other;
 
 /// Triggers `unused_variables` and `clippy::needless_return`.
 pub fn greet(name: &str) -> String {

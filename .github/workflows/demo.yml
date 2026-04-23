@@ -1,8 +1,9 @@
 name: Demo output
 
-# Runs on the `demo/showcase` branch only. Pipes clippy's JSON output through
-# the latest published rust-rapport binary, so the demo PR shows off the
-# current released version end-to-end (step summary + inline PR annotations).
+# Runs on pull requests against `main` that touch the demo crate or this
+# workflow. Pipes clippy's JSON output through the latest published
+# `rust-rapport` from crates.io, so the demo PR always showcases the current
+# released version (step summary + inline PR annotations).
 on:
   pull_request:
     branches: [main]
