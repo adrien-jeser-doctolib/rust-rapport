@@ -77,6 +77,12 @@ impl Output {
         self.message.as_ref().and_then(|m| m.message.as_ref()).cloned()
     }
 
+    /// The lint code if the compiler provided one (e.g. `clippy::needless_return`,
+    /// `E0425`). `None` for free-form diagnostics such as deprecated-lint notices.
+    pub fn code(&self) -> Option<&str> {
+        self.message.as_ref().and_then(|m| m.code.as_ref()).and_then(|c| c.code.as_deref())
+    }
+
     fn first_span(&self) -> Option<&Span> {
         self.message.as_ref().and_then(|m| m.spans.first())
     }

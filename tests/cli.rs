@@ -59,10 +59,10 @@ fn warnings_summary_contains_table_header_and_rows() {
         .write_stdin(fixture("clippy_warnings.json"))
         .assert()
         .success()
-        .stdout(str::contains("| Type | Message |"))
-        .stdout(str::contains("| ---- | ------- |"))
-        .stdout(str::contains("warning"))
-        .stdout(str::contains("error"));
+        .stdout(str::contains("| Level | Location | Rule | Message |"))
+        .stdout(str::contains("| --- | --- | --- | --- |"))
+        .stdout(str::contains("⚠️ warning"))
+        .stdout(str::contains("❌ error"));
 }
 
 #[test]

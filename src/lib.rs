@@ -157,9 +157,9 @@ mod tests {
     fn summary_table_has_header_in_returned_text() {
         let input = format!("{WARN_LINE}\n{BUILD_KO}\n");
         let (out, _) = run_capture(Mode::GithubSummary, &input);
-        assert!(out.contains("| Type | Message |"), "missing header: {out}");
-        assert!(out.contains("| ---- | ------- |"), "missing separator: {out}");
-        assert!(out.contains("warning"), "missing row: {out}");
+        assert!(out.contains("| Level | Location | Rule | Message |"), "missing header: {out}");
+        assert!(out.contains("| --- | --- | --- | --- |"), "missing separator: {out}");
+        assert!(out.contains("⚠️ warning"), "missing row: {out}");
     }
 
     #[test]
