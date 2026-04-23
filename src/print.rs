@@ -3,7 +3,7 @@
 use crate::output::Output;
 
 pub fn human(outputs: &[Output]) -> String {
-    outputs.iter().filter(|o| o.file_name().is_some()).filter_map(Output::rendered).collect()
+    outputs.iter().filter_map(Output::rendered).collect()
 }
 
 pub fn github_summary(outputs: &[Output], any_success: bool) -> String {
@@ -18,7 +18,6 @@ pub fn github_summary(outputs: &[Output], any_success: bool) -> String {
     let mut table = String::from("| Type | Message |\n| ---- | ------- |\n");
     let body = outputs
         .iter()
-        .filter(|o| o.file_name().is_some())
         .map(|o| {
             format!(
                 "| {} | {} |",
@@ -39,7 +38,6 @@ pub fn github_summary(outputs: &[Output], any_success: bool) -> String {
 pub fn github_pr_annotation(outputs: &[Output]) -> String {
     outputs
         .iter()
-        .filter(|o| o.file_name().is_some())
         .map(|o| {
             let opts = [
                 o.file_name().map(|f| format!("file={f}")),
@@ -146,9 +144,49 @@ mod tests {
     }
 
     #[test]
-    fn human_collects_rendered_text_only_when_file_present() {
+    fn human_collects_rendered_text() {
         let outs = [warning()];
         let s = human(&outs);
         assert!(s.contains("warning: unused"));
+    }
+
+    // Regression: clippy emits renamed/deprecated-lint warnings with `spans: []`
+    // (no file). The upstream filter in `lib.rs` already keeps only Error/Warning;
+    // the formatters must not drop warnings that happen to have no span.
+    const DEPRECATED_LINT_JSON: &str = r#"{
+        "reason":"compiler-message",
+        "manifest_path":"/x/Cargo.toml",
+        "message":{
+            "code":{"code":"renamed_and_removed_lints"},
+            "level":"warning",
+            "message":"the lint `clippy::cognitive_complexity` has been renamed to `clippy::cognitive-complexity`",
+            "spans":[],
+            "rendered":"warning: the lint `clippy::cognitive_complexity` has been renamed"
+        }
+    }"#;
+
+    fn deprecated_lint() -> Output {
+        serde_json::from_str(DEPRECATED_LINT_JSON).expect("valid JSON")
+    }
+
+    #[test]
+    fn human_retains_warnings_without_spans() {
+        let s = human(&[deprecated_lint()]);
+        assert!(s.contains("renamed"), "deprecated-lint warning was dropped: {s:?}");
+    }
+
+    #[test]
+    fn summary_retains_warnings_without_spans() {
+        let s = github_summary(&[deprecated_lint()], false);
+        assert!(s.contains("| warning | "), "warning row missing: {s}");
+        assert!(s.contains("has been renamed"), "deprecated-lint message missing: {s}");
+    }
+
+    #[test]
+    fn annotation_retains_warnings_without_spans() {
+        let s = github_pr_annotation(&[deprecated_lint()]);
+        assert!(!s.trim().is_empty(), "deprecated-lint annotation was dropped");
+        assert!(s.starts_with("::warning"), "got: {s}");
+        assert!(s.contains("has been renamed"), "rendered body missing: {s}");
     }
 }
