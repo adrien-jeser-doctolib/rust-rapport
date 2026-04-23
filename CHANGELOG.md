@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.8...v0.2.0) - 2026-04-23
+
+### Added
+
+- add `github` mode that handles summary + annotations + exit code
+
 ## [0.1.8](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.7...v0.1.8) - 2026-04-23
 
 ### Added
