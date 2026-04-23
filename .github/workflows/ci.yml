@@ -77,6 +77,20 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  vet:
+    name: cargo vet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.91"
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-vet
+      - run: cargo vet --locked
+
   build:
     name: Release build
     runs-on: ubuntu-latest

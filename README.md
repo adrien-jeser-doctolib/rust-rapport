@@ -62,6 +62,13 @@ cargo clippy --message-format json | rust-rapport human
 
 - Rust 1.85+ (edition 2024, MSRV enforced in CI).
 
+## Supply chain
+
+Two orthogonal checks run in CI:
+
+- **`cargo-audit`** (RUSTSEC) — fails if a published advisory matches any locked dependency. Also runs daily against `main` via `.github/workflows/audit.yml`.
+- **`cargo-vet`** — requires every dependency version to be either human-audited or exempted. Audits are imported from [Mozilla](https://github.com/mozilla/supply-chain), [Google](https://github.com/google/supply-chain), [Bytecode Alliance](https://github.com/bytecodealliance/wasmtime), and [Divvi Up](https://github.com/divviup/libprio-rs); the project's own audits live in [`supply-chain/audits.toml`](supply-chain/audits.toml).
+
 ## Releasing
 
 Releases are fully automated by [release-plz](https://release-plz.ieni.dev/). You never tag or bump `Cargo.toml` by hand — you just commit with [Conventional Commits](https://www.conventionalcommits.org/) messages:
