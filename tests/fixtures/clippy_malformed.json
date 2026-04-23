@@ -1,0 +1,4 @@
+{"reason":"compiler-message","manifest_path":"/proj/Cargo.toml","message":{"code":{"code":"unused_variables"},"level":"warning","message":"first warning","spans":[{"file_name":"src/main.rs","line_start":1,"line_end":1,"column_start":1,"column_end":2}],"rendered":"warning: first"}}
+this line is not valid json
+{"reason":"compiler-message","manifest_path":"/proj/Cargo.toml","message":{"code":{"code":"E0001"},"level":"error","message":"second error","spans":[{"file_name":"src/lib.rs","line_start":2,"line_end":2,"column_start":1,"column_end":2}],"rendered":"error: second"}}
+{"reason":"build-finished","success":false}

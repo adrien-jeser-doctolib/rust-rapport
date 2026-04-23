@@ -1,13 +1,44 @@
 [package]
 name = "rust-rapport"
-version = "0.0.1"
-edition = "2021"
-description = "rust-rapport"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Formats cargo clippy JSON output for GitHub Actions (step summary, PR annotations, human-readable)."
 license = "MIT"
+repository = "https://github.com/adrien-jeser-doctolib/rust-rapport"
+readme = "README.md"
+keywords = ["clippy", "cargo", "github-actions", "ci", "lint"]
+categories = ["command-line-utilities", "development-tools"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "rust-rapport"
+path = "src/main.rs"
 
 [dependencies]
-serde = { version = "^1", features = ["derive"] }
-serde_json = "^1"
-clap = { version = "^4", features = ["derive"] }
+clap = { version = "4.5.27", features = ["derive"] }
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+unwrap_used = "warn"
+expect_used = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+implicit_return = "allow"
+module_name_repetitions = "allow"
+missing_docs_in_private_items = "allow"
+multiple_crate_versions = "allow"

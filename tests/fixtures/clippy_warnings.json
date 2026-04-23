@@ -1,0 +1,4 @@
+{"reason":"compiler-message","manifest_path":"/proj/Cargo.toml","message":{"code":{"code":"unused_variables"},"level":"warning","message":"unused variable: `x`","spans":[{"file_name":"src/main.rs","line_start":3,"line_end":3,"column_start":9,"column_end":10}],"rendered":"warning: unused variable: `x`"}}
+{"reason":"compiler-message","manifest_path":"/proj/Cargo.toml","message":{"code":{"code":"unused_variables"},"level":"warning","message":"unused variable: `x`","spans":[{"file_name":"src/main.rs","line_start":3,"line_end":3,"column_start":9,"column_end":10}],"rendered":"warning: unused variable: `x`"}}
+{"reason":"compiler-message","manifest_path":"/proj/Cargo.toml","message":{"code":{"code":"E0425"},"level":"error","message":"cannot find value `foo`","spans":[{"file_name":"src/lib.rs","line_start":10,"line_end":10,"column_start":5,"column_end":8}],"rendered":"error[E0425]: cannot find value `foo`"}}
+{"reason":"build-finished","success":false}

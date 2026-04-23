@@ -1,0 +1,2 @@
+{"reason":"compiler-artifact","manifest_path":"/proj/Cargo.toml","target":{"kind":["lib"],"crate_types":["lib"],"name":"demo","src_path":"/proj/src/lib.rs","edition":"2024","doc":true,"doctest":true,"test":true}}
+{"reason":"build-finished","success":true}
