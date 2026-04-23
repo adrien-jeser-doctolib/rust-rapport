@@ -1,0 +1,45 @@
+name: Demo output
+
+# Runs on pull requests against `main` that touch the demo crate or this
+# workflow. Pipes clippy's JSON output through the latest published
+# `rust-rapport` from crates.io, so the demo PR always showcases the current
+# released version (step summary + inline PR annotations).
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - demo/**
+      - .github/workflows/demo.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  showcase:
+    name: Run clippy through rust-rapport
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: rust-rapport
+      - name: Clippy through rust-rapport
+        working-directory: demo
+        run: |
+          set +e
+          # Clippy emits file paths relative to the crate's manifest directory
+          # ("src/lib.rs"), but GitHub looks for the path relative to the repo
+          # root when matching annotations against the PR diff. Prefix with
+          # "demo/" so the inline annotations land on the right lines.
+          cargo clippy --message-format json \
+            | sed 's|"file_name":"|"file_name":"demo/|g' \
+            | tee >(rust-rapport github-summary >> "$GITHUB_STEP_SUMMARY") \
+                  >(rust-rapport github-pr-annotation) \
+            > /dev/null
+          # The demo is designed to produce warnings — keep the job green.
+          exit 0
