@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.2...v0.1.3) - 2026-04-23
+
+### Other
+
+- exempt rust-rapport from self-vet (first-party, not external dep)
+- pin cargo-vet to 0.10.0 to match local toolchain (fixes imports.lock formatting drift)
+
 ## [0.1.2](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.1...v0.1.2) - 2026-04-23
 
 ### Other
