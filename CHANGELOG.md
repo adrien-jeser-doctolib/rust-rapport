@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.1.4](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.3...v0.1.4) - 2026-04-23
+
+### Other
+
+- trust major Rust maintainers and import zcash/embark audits
+
 ## [0.1.3](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.2...v0.1.3) - 2026-04-23
 
 ### Other
