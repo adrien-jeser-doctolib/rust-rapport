@@ -8,7 +8,8 @@ All notable changes to this project are documented in this file. The format is b
 - `LICENSE` file (MIT) — was declared in `Cargo.toml` but missing at the repo root, blocking `cargo publish` and breaking the README link.
 - `.editorconfig` for editor-agnostic indentation and line endings.
 - `.github/workflows/audit.yml` — scheduled daily `cargo-audit` against the RUSTSEC advisory database.
-- `.github/workflows/release.yml` — on tag `v*`: creates a GitHub Release with notes extracted from this changelog, uploads cross-platform binaries (`x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu`, `universal-apple-darwin`, `x86_64-pc-windows-msvc`), and publishes the crate to crates.io.
+- `.github/workflows/release-plz.yml` + `release-plz.toml` — fully automated releases: conventional commits on `main` open/update a release PR that bumps `Cargo.toml` and writes the `CHANGELOG.md` entry; merging the PR tags, creates the GitHub Release, and publishes to crates.io.
+- `.github/workflows/release.yml` — listens for published GitHub Releases and attaches cross-platform binaries (`x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu`, `universal-apple-darwin`, `x86_64-pc-windows-msvc`) as release assets.
 - CI matrix extended to cross-platform: `test` runs on Linux, macOS, and Windows; separate `msrv` job verifies the 1.85 floor.
 - CI `audit` job (`rustsec/audit-check`) running on every PR.
 - Community files: `.github/CODEOWNERS`, issue templates (bug / feature / config), `PULL_REQUEST_TEMPLATE.md`.

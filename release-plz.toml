@@ -1,0 +1,24 @@
+[workspace]
+# Generate CHANGELOG entries from Conventional Commits.
+changelog_update = true
+# Create a Git tag and a GitHub Release when the release PR is merged.
+git_release_enable = true
+# Label the auto-generated release PR.
+pr_labels = ["release"]
+
+[changelog]
+# Skip commits that wouldn't mean anything to a user of the crate.
+commit_parsers = [
+    { message = "^feat", group = "Added" },
+    { message = "^fix", group = "Fixed" },
+    { message = "^perf", group = "Changed" },
+    { message = "^refactor", group = "Changed" },
+    { message = "^doc", group = "Documentation" },
+    { message = "^test", group = "Testing" },
+    { message = "^chore\\(deps\\)", skip = true },
+    { message = "^chore\\(release\\)", skip = true },
+    { message = "^chore", skip = true },
+    { message = "^ci", skip = true },
+    { message = "^build", skip = true },
+    { message = "^style", skip = true },
+]

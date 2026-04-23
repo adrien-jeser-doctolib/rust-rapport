@@ -1,8 +1,10 @@
-name: Release
+name: Upload release binaries
 
+# Triggered when release-plz publishes a GitHub Release after the release PR is merged.
+# Builds cross-platform binaries and attaches them as Release assets.
 on:
-  push:
-    tags: ["v*"]
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -11,19 +13,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  create-release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: taiki-e/create-gh-release-action@v1
-        with:
-          changelog: CHANGELOG.md
-          token: ${{ secrets.GITHUB_TOKEN }}
-
   upload-assets:
     name: Upload ${{ matrix.target }}
-    needs: create-release
     strategy:
       fail-fast: false
       matrix:
@@ -47,13 +38,3 @@ jobs:
           tar: unix
           zip: windows
           token: ${{ secrets.GITHUB_TOKEN }}
-
-  publish-crates-io:
-    name: Publish to crates.io
-    needs: create-release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo publish --locked --token ${{ secrets.CARGO_REGISTRY_TOKEN }}

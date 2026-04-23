@@ -64,11 +64,20 @@ cargo clippy --message-format json | rust-rapport human
 
 ## Releasing
 
-1. Move the `[Unreleased]` section of [`CHANGELOG.md`](CHANGELOG.md) to `[X.Y.Z] - YYYY-MM-DD`.
-2. Bump `version` in [`Cargo.toml`](Cargo.toml).
-3. `git commit -am "chore: release vX.Y.Z" && git tag vX.Y.Z && git push --follow-tags`.
+Releases are fully automated by [release-plz](https://release-plz.ieni.dev/). You never tag or bump `Cargo.toml` by hand — you just commit with [Conventional Commits](https://www.conventionalcommits.org/) messages:
 
-The `release.yml` workflow takes over from there: it creates a GitHub Release with the CHANGELOG entry as notes, uploads cross-platform binaries, and publishes the crate to crates.io.
+- `feat: …` — minor bump
+- `fix: …` — patch bump
+- `feat!: …` or `BREAKING CHANGE:` in the body — major bump
+- `chore: …`, `ci: …`, `docs: …`, `refactor: …`, `test: …` — no bump (but still visible in the PR)
+
+**Flow:**
+
+1. Land conventional commits on `main` (either directly or via merged PRs).
+2. The `release-plz` workflow opens (or updates) a **release PR** titled `chore: release vX.Y.Z` that bumps the version in `Cargo.toml` and rewrites the `[Unreleased]` section of [`CHANGELOG.md`](CHANGELOG.md) into a dated version entry.
+3. Review the PR. Edit the changelog prose freely — release-plz won't clobber your edits on subsequent runs as long as the version stays the same.
+4. Merge the PR. release-plz then pushes the tag `vX.Y.Z`, creates the GitHub Release, and publishes to crates.io.
+5. The `Upload release binaries` workflow reacts to the GitHub Release being published and attaches the four cross-platform archives as release assets.
 
 ## License
 
