@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.1...v0.1.2) - 2026-04-23
+
+### Other
+
+- add workflow_dispatch trigger to release.yml for retroactive binary upload
+- use RELEASE_PLZ_TOKEN PAT so release events trigger downstream workflows
+- auto-merge release-plz PRs
+
 ## [0.1.1](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.0...v0.1.1) - 2026-04-23
 
 ### Other
