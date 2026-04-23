@@ -34,12 +34,12 @@ cargo install rust-rapport --locked
 ## Usage
 
 ```sh
-cargo clippy --message-format json | rust-rapport github-summary >> "$GITHUB_STEP_SUMMARY"
-cargo clippy --message-format json | rust-rapport github-pr-annotation
 cargo clippy --message-format json | rust-rapport human
 ```
 
 ## GitHub Actions
+
+One-liner that renders the step summary, emits inline PR annotations, and propagates clippy's exit code:
 
 ```yaml
 - uses: actions/checkout@v4
@@ -49,13 +49,19 @@ cargo clippy --message-format json | rust-rapport human
   with:
     tool: rust-rapport
 - name: Clippy
-  run: |
-    set +e
-    cargo clippy --message-format json \
-      | tee >(rust-rapport github-summary >> "$GITHUB_STEP_SUMMARY") \
-            >(rust-rapport github-pr-annotation) \
-      > /dev/null
-    exit "${PIPESTATUS[0]}"
+  run: cargo clippy --message-format json | rust-rapport github
+```
+
+`rust-rapport github` auto-detects `$GITHUB_STEP_SUMMARY`, writes the Markdown table there, pipes the workflow-command annotations to stdout, and exits `1` when clippy reports an error or a build failure (`0` otherwise).
+
+### Advanced — individual formatters
+
+If you need to redirect the outputs yourself (non-GitHub runners, extra post-processing, etc.), the three underlying modes are still available and never affect the exit code on their own:
+
+```sh
+cargo clippy --message-format json | rust-rapport github-summary      >> "$GITHUB_STEP_SUMMARY"
+cargo clippy --message-format json | rust-rapport github-pr-annotation
+cargo clippy --message-format json | rust-rapport human
 ```
 
 ## Requirements

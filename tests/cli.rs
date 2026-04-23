@@ -91,3 +91,62 @@ fn human_mode_emits_rendered_text() {
         .stdout(str::contains("warning: unused variable"))
         .stdout(str::contains("error[E0425]"));
 }
+
+#[test]
+fn github_mode_writes_summary_to_env_file_and_annotations_to_stdout() {
+    let dir = std::env::temp_dir();
+    let path = dir.join(format!("rust-rapport-it-{}.md", std::process::id()));
+    let _ = std::fs::remove_file(&path);
+
+    // clippy_warnings.json contains an error → mode `github` exits 1.
+    cmd("github")
+        .env("GITHUB_STEP_SUMMARY", &path)
+        .write_stdin(fixture("clippy_warnings.json"))
+        .assert()
+        .code(1)
+        .stdout(str::contains("::warning "))
+        .stdout(str::contains("::error "));
+
+    let summary = std::fs::read_to_string(&path).expect("summary file");
+    assert!(
+        summary.contains("| Level | Location | Rule | Message |"),
+        "summary missing: {summary}"
+    );
+    assert!(summary.contains("⚠️ warning"));
+    let _ = std::fs::remove_file(&path);
+}
+
+#[test]
+fn github_mode_without_env_var_falls_back_to_stderr_for_summary() {
+    cmd("github")
+        .env_remove("GITHUB_STEP_SUMMARY")
+        .write_stdin(fixture("clippy_warnings.json"))
+        .assert()
+        .code(1)
+        .stderr(str::contains("| Level | Location | Rule | Message |"));
+}
+
+#[test]
+fn github_mode_exits_nonzero_on_build_failure() {
+    // clippy_failed.json reports a build failure → mode `github` must exit 1.
+    cmd("github")
+        .env_remove("GITHUB_STEP_SUMMARY")
+        .write_stdin(fixture("clippy_failed.json"))
+        .assert()
+        .code(1);
+}
+
+#[test]
+fn github_mode_exits_zero_on_clean_build() {
+    cmd("github")
+        .env_remove("GITHUB_STEP_SUMMARY")
+        .write_stdin(fixture("clippy_clean.json"))
+        .assert()
+        .success();
+}
+
+#[test]
+fn non_github_modes_still_exit_zero_even_on_build_failure() {
+    // `github-summary` etc. are pure formatters — they never flip the exit code.
+    cmd("github-summary").write_stdin(fixture("clippy_failed.json")).assert().success();
+}

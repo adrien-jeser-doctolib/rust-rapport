@@ -122,10 +122,4 @@ jobs:
           path: bin
       - run: chmod +x bin/rust-rapport
       - name: Run clippy through rust-rapport
-        run: |
-          set +e
-          cargo clippy --message-format json \
-            | tee >(bin/rust-rapport github-summary >> "$GITHUB_STEP_SUMMARY") \
-                  >(bin/rust-rapport github-pr-annotation) \
-            > /dev/null
-          exit "${PIPESTATUS[0]}"
+        run: cargo clippy --message-format json | bin/rust-rapport github

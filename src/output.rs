@@ -37,8 +37,10 @@ pub struct Span {
 }
 
 impl Output {
-    pub fn success(&self) -> bool {
-        self.success.unwrap_or_default()
+    /// Raw `success` field. `Some(true)`/`Some(false)` on `build-finished`
+    /// messages, `None` on everything else (compiler-message, artifact, …).
+    pub const fn build_success(&self) -> Option<bool> {
+        self.success
     }
 
     pub fn level(&self) -> Option<&str> {
@@ -145,8 +147,8 @@ mod tests {
 
     #[test]
     fn success_reflects_build_finished_payload() {
-        assert!(parse(BUILD_FINISHED_OK).success());
-        assert!(!parse(BUILD_FINISHED_KO).success());
+        assert_eq!(parse(BUILD_FINISHED_OK).build_success(), Some(true));
+        assert_eq!(parse(BUILD_FINISHED_KO).build_success(), Some(false));
     }
 
     #[test]

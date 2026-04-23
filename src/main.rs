@@ -17,13 +17,16 @@ struct Cli {
 fn main() -> ExitCode {
     let cli = Cli::parse();
     let stdin = io::stdin();
-    let stdout = io::stdout();
-    let stderr = io::stderr();
-    match run(cli.mode, stdin.lock(), stdout.lock(), stderr.lock()) {
-        Ok(()) => ExitCode::SUCCESS,
+    let mut stdout = io::stdout().lock();
+    let mut stderr = io::stderr().lock();
+    match run(cli.mode, stdin.lock(), &mut stdout, &mut stderr) {
+        // In `Mode::Github` we mirror clippy's verdict in the exit code.
+        // The other modes are pure formatters — they never fail the pipeline.
+        Ok(report) if cli.mode == Mode::Github && report.is_failure() => ExitCode::from(1),
+        Ok(_) => ExitCode::SUCCESS,
         Err(e) => {
             eprintln!("rust-rapport: {e}");
-            ExitCode::FAILURE
+            ExitCode::from(2)
         }
     }
 }

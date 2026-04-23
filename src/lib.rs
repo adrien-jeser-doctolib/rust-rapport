@@ -9,8 +9,10 @@
 //! use rust_rapport::{Mode, run};
 //!
 //! # fn main() -> Result<(), rust_rapport::Error> {
-//! run(Mode::GithubSummary, io::stdin().lock(), io::stdout().lock(), io::stderr().lock())?;
-//! # Ok(())
+//! let mut stdout = io::stdout().lock();
+//! let mut stderr = io::stderr().lock();
+//! let report = run(Mode::Github, io::stdin().lock(), &mut stdout, &mut stderr)?;
+//! std::process::exit(if report.is_failure() { 1 } else { 0 });
 //! # }
 //! ```
 
@@ -32,12 +34,45 @@ use output::Output;
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, ValueEnum)]
 #[non_exhaustive]
 pub enum Mode {
+    /// Convenience mode for GitHub Actions: appends the Markdown summary to
+    /// `$GITHUB_STEP_SUMMARY`, emits PR workflow commands on stdout, and lets
+    /// the caller set the process exit status based on the [`RunReport`]
+    /// returned by [`run`] (non-zero when clippy reported errors or the build
+    /// failed). Equivalent to the legacy `tee >(github-summary) >(github-pr-annotation)`
+    /// bash incantation, without the `PIPESTATUS` dance.
+    Github,
     /// Markdown table for `$GITHUB_STEP_SUMMARY`.
     GithubSummary,
     /// GitHub workflow commands for inline PR annotations.
     GithubPrAnnotation,
     /// Plain rendered diagnostics.
     Human,
+}
+
+/// Summary of what [`run`] observed in the clippy stream.
+///
+/// Returned so the caller can choose an exit code that mirrors clippy's
+/// (non-zero when the build failed or at least one error-level diagnostic
+/// was reported).
+#[derive(Debug, Default, Clone, Copy)]
+pub struct RunReport {
+    /// Number of unique error-level diagnostics.
+    pub errors: usize,
+    /// Number of unique warning-level diagnostics.
+    pub warnings: usize,
+    /// At least one `build-finished` message reported `success: true`.
+    pub any_success: bool,
+    /// At least one `build-finished` message reported `success: false`.
+    pub any_failure: bool,
+}
+
+impl RunReport {
+    /// `true` if clippy would have exited non-zero: either the build was
+    /// marked as failed or at least one error-level diagnostic was emitted.
+    #[must_use]
+    pub const fn is_failure(&self) -> bool {
+        self.errors > 0 || self.any_failure
+    }
 }
 
 /// Errors returned by [`run`].
@@ -73,51 +108,93 @@ impl From<std::io::Error> for Error {
 /// Reads clippy JSON from `reader`, formats according to `mode`, writes to `writer`.
 ///
 /// Per-line JSON parse errors are logged to `error_writer` and the run continues;
-/// only I/O failures on `reader` or `writer` are fatal.
+/// only I/O failures on `reader` or `writer` are fatal. In [`Mode::Github`] the
+/// summary is appended to the file at `$GITHUB_STEP_SUMMARY` (if set) instead
+/// of being written to `writer`; annotations still go to `writer`.
 ///
 /// # Errors
 /// Returns [`Error::Io`] if reading from `reader`, writing to `writer`, or
-/// writing to `error_writer` fails.
-pub fn run<R, W, E>(mode: Mode, reader: R, mut writer: W, mut error_writer: E) -> Result<(), Error>
+/// writing to `error_writer` / `$GITHUB_STEP_SUMMARY` fails.
+pub fn run<R, W, E>(
+    mode: Mode,
+    reader: R,
+    writer: &mut W,
+    error_writer: &mut E,
+) -> Result<RunReport, Error>
 where
     R: BufRead,
-    W: Write,
-    E: Write,
+    W: Write + ?Sized,
+    E: Write + ?Sized,
 {
-    let (diagnostics, any_success) = parse(reader, &mut error_writer)?;
-    let text = match mode {
-        Mode::GithubSummary => print::github_summary(&diagnostics, any_success),
-        Mode::GithubPrAnnotation => print::github_pr_annotation(&diagnostics),
-        Mode::Human => print::human(&diagnostics),
-    };
-    writeln!(writer, "{text}")?;
+    let (diagnostics, report) = parse(reader, error_writer)?;
+    match mode {
+        Mode::Github => {
+            write_github_summary(
+                &print::github_summary(&diagnostics, report.any_success),
+                error_writer,
+            )?;
+            let annot = print::github_pr_annotation(&diagnostics);
+            if !annot.is_empty() {
+                writeln!(writer, "{annot}")?;
+            }
+        }
+        Mode::GithubSummary => {
+            writeln!(writer, "{}", print::github_summary(&diagnostics, report.any_success))?;
+        }
+        Mode::GithubPrAnnotation => {
+            writeln!(writer, "{}", print::github_pr_annotation(&diagnostics))?;
+        }
+        Mode::Human => writeln!(writer, "{}", print::human(&diagnostics))?,
+    }
+    Ok(report)
+}
+
+/// Append `summary` to the file pointed to by `$GITHUB_STEP_SUMMARY`. Falls
+/// back to `error_writer` when the environment variable is unset — useful for
+/// local previews of the GitHub rendering.
+fn write_github_summary<E: Write + ?Sized>(
+    summary: &str,
+    error_writer: &mut E,
+) -> Result<(), Error> {
+    if let Some(path) = std::env::var_os("GITHUB_STEP_SUMMARY") {
+        writeln!(std::fs::OpenOptions::new().append(true).create(true).open(path)?, "{summary}")?;
+    } else {
+        writeln!(error_writer, "{summary}")?;
+    }
     Ok(())
 }
 
-fn parse<R, E>(reader: R, error_writer: &mut E) -> Result<(Vec<Output>, bool), Error>
+fn parse<R, E>(reader: R, error_writer: &mut E) -> Result<(Vec<Output>, RunReport), Error>
 where
     R: BufRead,
-    E: Write,
+    E: Write + ?Sized,
 {
-    let mut any_success = false;
-    let mut set: BTreeSet<Output> = BTreeSet::new();
-    for (idx, line) in reader.lines().enumerate() {
-        let line = line?;
-        match serde_json::from_str::<Output>(&line) {
-            Ok(output) => {
-                if output.success() {
-                    any_success = true;
+    let lines = reader.lines().collect::<Result<Vec<_>, _>>()?;
+    let (diagnostics, report) = lines.into_iter().enumerate().try_fold(
+        (BTreeSet::<Output>::new(), RunReport::default()),
+        |(mut set, mut report), (idx, line)| -> Result<_, Error> {
+            match serde_json::from_str::<Output>(&line) {
+                Ok(output) => {
+                    match output.build_success() {
+                        Some(true) => report.any_success = true,
+                        Some(false) => report.any_failure = true,
+                        None => {}
+                    }
+                    if output.is_level(&Level::Error) || output.is_level(&Level::Warning) {
+                        set.insert(output);
+                    }
                 }
-                if output.is_level(&Level::Error) || output.is_level(&Level::Warning) {
-                    set.insert(output);
+                Err(e) => {
+                    writeln!(error_writer, "rust-rapport: line {}: invalid JSON: {e}", idx + 1)?;
                 }
             }
-            Err(e) => {
-                writeln!(error_writer, "rust-rapport: line {}: invalid JSON: {e}", idx + 1)?;
-            }
-        }
-    }
-    Ok((set.into_iter().collect(), any_success))
+            Ok((set, report))
+        },
+    )?;
+    // Count distinct findings by level from the deduplicated set.
+    let errors = diagnostics.iter().filter(|o| o.is_level(&Level::Error)).count();
+    let warnings = diagnostics.iter().filter(|o| o.is_level(&Level::Warning)).count();
+    Ok((diagnostics.into_iter().collect(), RunReport { errors, warnings, ..report }))
 }
 
 #[cfg(test)]
@@ -203,5 +280,43 @@ mod tests {
         let e = Error::from(io_err);
         assert!(e.to_string().contains("I/O error"));
         assert!(e.to_string().contains("broken pipe"));
+    }
+
+    /// Returns the `RunReport` built from `input` via a non-Github mode
+    /// (avoids touching `$GITHUB_STEP_SUMMARY` in unit tests — that behaviour
+    /// is covered by the integration tests in `tests/cli.rs`).
+    fn run_report(input: &str) -> RunReport {
+        let mut out = Vec::new();
+        let mut err = Vec::new();
+        run(Mode::GithubPrAnnotation, Cursor::new(input), &mut out, &mut err).expect("run")
+    }
+
+    #[test]
+    fn report_counts_errors_and_warnings_distinctly() {
+        let input = format!("{WARN_LINE}\n{ERROR_LINE}\n");
+        let r = run_report(&input);
+        assert_eq!(r.warnings, 1);
+        assert_eq!(r.errors, 1);
+        assert!(r.is_failure(), "any error must flip is_failure");
+    }
+
+    #[test]
+    fn report_is_not_failure_when_only_warnings() {
+        let r = run_report(&format!("{WARN_LINE}\n{BUILD_OK}\n"));
+        assert!(!r.is_failure());
+    }
+
+    #[test]
+    fn report_picks_up_build_success_flag() {
+        let r = run_report(&format!("{BUILD_OK}\n"));
+        assert!(r.any_success);
+        assert!(!r.any_failure);
+    }
+
+    #[test]
+    fn report_flags_failure_on_build_finished_false_without_diagnostics() {
+        let r = run_report(&format!("{BUILD_KO}\n"));
+        assert!(r.any_failure);
+        assert!(r.is_failure());
     }
 }
