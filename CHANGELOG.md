@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.1.7](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.6...v0.1.7) - 2026-04-23
+
+### Other
+
+- scaffold demo crate and workflow on main (before demo/showcase rewrite)
+
 ## [0.1.6](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.5...v0.1.6) - 2026-04-23
 
 ### Other
