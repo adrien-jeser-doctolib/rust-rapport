@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+- `LICENSE` file (MIT) — was declared in `Cargo.toml` but missing at the repo root, blocking `cargo publish` and breaking the README link.
+- `.editorconfig` for editor-agnostic indentation and line endings.
+- `.github/workflows/audit.yml` — scheduled daily `cargo-audit` against the RUSTSEC advisory database.
+- `.github/workflows/release.yml` — on tag `v*`: creates a GitHub Release with notes extracted from this changelog, uploads cross-platform binaries (`x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu`, `universal-apple-darwin`, `x86_64-pc-windows-msvc`), and publishes the crate to crates.io.
+- CI matrix extended to cross-platform: `test` runs on Linux, macOS, and Windows; separate `msrv` job verifies the 1.85 floor.
+- CI `audit` job (`rustsec/audit-check`) running on every PR.
+- Community files: `.github/CODEOWNERS`, issue templates (bug / feature / config), `PULL_REQUEST_TEMPLATE.md`.
+- README badges (CI, crates.io, MSRV, license), install section covering crates.io / `taiki-e/install-action` / prebuilt archives, and a `Releasing` section.
+
+### Changed
+- README's GitHub Actions example now installs rust-rapport via `taiki-e/install-action@v2` (prebuilt binary) instead of `cargo install --git` (source compile on every run).
+
 ## [0.1.0] - 2026-04-23
 
 ### Added

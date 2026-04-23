@@ -39,21 +39,43 @@ jobs:
       - run: cargo clippy --all-targets --all-features --locked -- -D warnings
 
   test:
-    name: Test (${{ matrix.toolchain }})
-    runs-on: ubuntu-latest
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        toolchain: ["1.91", "1.85"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.toolchain }}
+          toolchain: "1.91"
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.toolchain }}
+          key: ${{ matrix.os }}
       - run: cargo test --all-features --locked
+
+  msrv:
+    name: MSRV (1.85)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.85"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: msrv
+      - run: cargo test --all-features --locked
+
+  audit:
+    name: Security audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build:
     name: Release build
