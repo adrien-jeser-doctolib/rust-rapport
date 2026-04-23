@@ -1,0 +1,16 @@
+[package]
+name = "rust-rapport-demo"
+version = "0.0.0"
+edition = "2024"
+publish = false
+# Excluded from the parent crate's workspace (see ../Cargo.toml). Exists only
+# on the `demo/showcase` branch; its sole purpose is to trigger a variety of
+# clippy findings so that `rust-rapport` has something interesting to render
+# on the demo pull request.
+description = "Intentionally clippy-hostile code used to showcase rust-rapport's output."
+
+[lib]
+path = "src/lib.rs"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }

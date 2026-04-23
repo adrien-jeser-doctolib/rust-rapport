@@ -1,0 +1,39 @@
+name: Demo output
+
+# Runs on the `demo/showcase` branch only. Pipes clippy's JSON output through
+# the latest published rust-rapport binary, so the demo PR shows off the
+# current released version end-to-end (step summary + inline PR annotations).
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - demo/**
+      - .github/workflows/demo.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  showcase:
+    name: Run clippy through rust-rapport
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: rust-rapport
+      - name: Clippy through rust-rapport
+        working-directory: demo
+        run: |
+          set +e
+          cargo clippy --message-format json \
+            | tee >(rust-rapport github-summary >> "$GITHUB_STEP_SUMMARY") \
+                  >(rust-rapport github-pr-annotation) \
+            > /dev/null
+          # The demo is designed to produce warnings — keep the job green.
+          exit 0
