@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.1.1](https://github.com/adrien-jeser-doctolib/rust-rapport/compare/v0.1.0...v0.1.1) - 2026-04-23
+
+### Other
+
+- ignore .claude/ and use release-plz default changelog parsers
+
 ### Added
 - `LICENSE` file (MIT) — was declared in `Cargo.toml` but missing at the repo root, blocking `cargo publish` and breaking the README link.
 - `.editorconfig` for editor-agnostic indentation and line endings.
