@@ -31,7 +31,12 @@ jobs:
         working-directory: demo
         run: |
           set +e
+          # Clippy emits file paths relative to the crate's manifest directory
+          # ("src/lib.rs"), but GitHub looks for the path relative to the repo
+          # root when matching annotations against the PR diff. Prefix with
+          # "demo/" so the inline annotations land on the right lines.
           cargo clippy --message-format json \
+            | sed 's|"file_name":"|"file_name":"demo/|g' \
             | tee >(rust-rapport github-summary >> "$GITHUB_STEP_SUMMARY") \
                   >(rust-rapport github-pr-annotation) \
             > /dev/null
